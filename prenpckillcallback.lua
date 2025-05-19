@@ -12,7 +12,7 @@ if PRE_NPC_KILL then
 end
 
 PRE_NPC_KILL = RegisterMod("Pre NPC Kill Callback", 1)
----Called before an NPC is killed
+---Called before an NPC is killed by damage
 ---
 ---Return `true` to prevent the kill
 ---
@@ -26,7 +26,7 @@ PRE_NPC_KILL = RegisterMod("Pre NPC Kill Callback", 1)
 ---* frozen `boolean`
 ---* amt `number`
 ---* flags `DamageFlag`
----* delay `integer`
+---* cooldown `integer`
 PRE_NPC_KILL.ID = "__PRE_NPC_KILL"
 PRE_NPC_KILL.Internal = {}
 PRE_NPC_KILL.Internal.VERSION = VERSION
@@ -46,8 +46,8 @@ PRE_NPC_KILL.Internal.CallbackEntries = {
         ---@param amt number
         ---@param flags DamageFlag
         ---@param source EntityRef
-        ---@param delay integer
-        function (_, entity, amt, flags, source, delay)
+        ---@param cooldown integer
+        function (_, entity, amt, flags, source, cooldown)
             local data = entity:GetData() if data.____PRE_NPC_KILL_SKIP_NEXT then return end
             local npc = entity:ToNPC() if not npc then return end
 
@@ -63,11 +63,11 @@ PRE_NPC_KILL.Internal.CallbackEntries = {
 
             for _, v in ipairs(Isaac.GetCallbacks(PRE_NPC_KILL.ID)) do
                 if not v.Param or v.Param == npc.Type then
-                    local result = v.Function(v.Mod, npc, source, frozen, amt, flags, delay)
+                    local result = v.Function(v.Mod, npc, source, frozen, amt, flags, cooldown)
 
                     if result == true then
                         data.____PRE_NPC_KILL_SKIP_NEXT = true
-                        npc:TakeDamage(amt, flags | DamageFlag.DAMAGE_NOKILL, source, delay)
+                        npc:TakeDamage(amt, flags | DamageFlag.DAMAGE_NOKILL, source, cooldown)
                         data.____PRE_NPC_KILL_SKIP_NEXT = false
                         return false
                     elseif result == false then
